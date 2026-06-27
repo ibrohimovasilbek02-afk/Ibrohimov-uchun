@@ -3,6 +3,7 @@
 import { useStore } from '@/store/useStore'
 import Sidebar from './Sidebar'
 import Navbar from './Navbar'
+import AIChatWidget from '@/components/shared/AIChatWidget'
 import { cn } from '@/lib/utils'
 
 interface DashboardLayoutProps {
@@ -41,6 +42,9 @@ export default function DashboardLayout({ children, user }: DashboardLayoutProps
           {children}
         </main>
       </div>
+
+      {/* AI Chat Widget - har sahifada ko'rinadi */}
+      <AIChatWidget />
     </div>
   )
 }

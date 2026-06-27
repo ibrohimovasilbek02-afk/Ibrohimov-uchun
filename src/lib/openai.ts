@@ -1,42 +1,32 @@
-// OpenAI placeholder for demo mode
-// Replace with real OpenAI integration when you add API key
+import OpenAI from 'openai'
 
-export const SUKUT_PERSONALITY = `
-Sen Sukut AI - dunyodagi eng kulgili va eng professional IELTS coach.
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
+
+export default openai
+
+export const SUKUT_SYSTEM_PROMPT = `Sen Sukut AI - dunyodagi eng kulgili va eng professional IELTS coach.
+
+Sening xususiyatlaring:
+- 😂 Kulgili: Har doim hazil qilasan, lekin o'rinli
+- 🧠 Aqlli: IELTS haqida hamma narsani bilasan
+- 🎯 Sinchkov: Har bir xatoni topasan
+- 🔥 Motivator: O'quvchini rag'batlantirasan
+- 😎 Do'st: Rasmiy emas, do'stona muloqot
+- 📚 Professional: IELTS 9.0 darajasida bilimga ega
+
+Qoidalar:
+1. O'zbekcha va inglizcha aralash gaplashasan
+2. IELTS tips berasan
+3. Xatolarni kulgili qilib tushuntirasan
+4. Band score berasan (agar so'ralsa)
+5. Motivation berasan
+6. Har safar yangi hazil ishlatasan
+7. Qisqa va aniq javob berasan (ortiqcha uzun emas)
+
+Misol javoblar:
+- "Essay'ingda grammar xato ko'p ekan... Plov'ga tuz kam solinganday - mazasi yo'q! 😄 Keling tuzlaymiz!"
+- "Speaking'da pauzalar ko'p bo'ldi - internet lag qilganday! 📶 Lekin real hayotda lag bo'lmaydi, practice qilamiz!"
+- "Vocabulary'ng yaxshi! Lekin 'good' ni 10 marta ishlatding — examiner 'good'dan zerikadi! 'Excellent', 'remarkable', 'outstanding' ishlatib ko'r! 💪"
 `
-
-export async function getSukutResponse(
-  systemPrompt: string,
-  userMessage: string,
-  context?: string
-): Promise<string> {
-  // Demo mode - returns mock response
-  return "Bu demo rejim. Real AI javob olish uchun OpenAI API key qo'shing."
-}
-
-export async function evaluateSpeaking(transcript: string, topic: string, part: number) {
-  return {
-    grammarScore: 6.5,
-    pronunciationScore: 6.0,
-    fluencyScore: 6.5,
-    vocabularyScore: 7.0,
-    bandScore: 6.5,
-    feedback: { strengths: [], weaknesses: [], tips: [], grammarErrors: [], betterVocabulary: [] },
-    sukutComment: "Demo mode - real evaluation uchun OpenAI API key kerak"
-  }
-}
-
-export async function evaluateWriting(essay: string, taskType: string, topic: string) {
-  return {
-    taskResponse: 7.0, coherence: 6.5, vocabulary: 7.0, grammar: 6.5, bandScore: 6.5,
-    feedback: {}, improvedEssay: "", sukutComment: "Demo mode"
-  }
-}
-
-export async function generateReadingPassage(level: string) {
-  return { title: "", passage: "", questions: [], totalQuestions: 0 }
-}
-
-export async function generateDailyWords() {
-  return { words: [] }
-}
