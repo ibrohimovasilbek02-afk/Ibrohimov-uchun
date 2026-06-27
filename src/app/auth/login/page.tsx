@@ -18,12 +18,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // TODO: Implement login logic with NextAuth
-    setTimeout(() => setIsLoading(false), 2000)
+    // Demo mode - redirect to dashboard
+    setTimeout(() => {
+      window.location.href = '/dashboard'
+    }, 1000)
   }
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google login
+    // Demo mode - redirect to dashboard
+    window.location.href = '/dashboard'
   }
 
   return (
