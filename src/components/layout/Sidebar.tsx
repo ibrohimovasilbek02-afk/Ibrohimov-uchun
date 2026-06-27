@@ -24,6 +24,7 @@ import { useStore } from '@/store/useStore'
 
 const menuItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', emoji: '🏠' },
+  { href: '/chat', icon: Mic, label: 'Sukut AI Chat', emoji: '😎' },
   { href: '/speaking', icon: Mic, label: 'Speaking', emoji: '🎤' },
   { href: '/writing', icon: PenTool, label: 'Writing', emoji: '✍️' },
   { href: '/reading', icon: BookOpen, label: 'Reading', emoji: '📖' },
