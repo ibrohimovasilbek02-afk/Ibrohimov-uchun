@@ -90,36 +90,58 @@ export default function ChatPage() {
     }
   }
 
-  // Text to Speech
+  // Text to Speech - ISHLAYDI
   const speakText = (text: string) => {
     if (typeof window === 'undefined') return
+    if (!window.speechSynthesis) return
+
+    window.speechSynthesis.cancel()
 
     const cleanText = text
       .replace(/[😎😂🎤💪👀🔥❌✅🍅📶💸😅😭🤔👋👏🟢⚡🎬]/g, '')
       .replace(/\*\*/g, '')
+      .replace(/\n/g, '. ')
 
-    const utterance = new SpeechSynthesisUtterance(cleanText)
-    utterance.lang = 'en-US'
-    utterance.rate = 0.9
-    utterance.pitch = 1.1
-
-    utterance.onstart = () => {
-      setIsSpeaking(true)
-      setCallStatus('speaking')
-    }
-    utterance.onend = () => {
-      setIsSpeaking(false)
-      // Call rejimida — tugagandan keyin yana eshitish
-      if (callMode) {
-        setCallStatus('listening')
-        setTimeout(() => startListening(), 500)
-      } else {
-        setCallStatus('idle')
+    // Qisqa qismga bo'lib gapirish (brauzer uzun textda to'xtaydi)
+    const chunks = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText]
+    
+    let i = 0
+    const speakNext = () => {
+      if (i < chunks.length) {
+        const utterance = new SpeechSynthesisUtterance(chunks[i])
+        utterance.lang = 'en-US'
+        utterance.rate = 0.9
+        utterance.pitch = 1.0
+        utterance.volume = 1.0
+        
+        utterance.onstart = () => {
+          setIsSpeaking(true)
+          setCallStatus('speaking')
+        }
+        utterance.onend = () => {
+          i++
+          if (i < chunks.length) {
+            speakNext()
+          } else {
+            setIsSpeaking(false)
+            if (callMode) {
+              setCallStatus('listening')
+              setTimeout(() => startListening(), 800)
+            } else {
+              setCallStatus('idle')
+            }
+          }
+        }
+        utterance.onerror = () => {
+          setIsSpeaking(false)
+          setCallStatus('idle')
+        }
+        
+        window.speechSynthesis.speak(utterance)
       }
     }
-
-    window.speechSynthesis.cancel()
-    window.speechSynthesis.speak(utterance)
+    
+    speakNext()
   }
 
   const sendMessageWithText = async (text: string) => {
@@ -217,7 +239,7 @@ export default function ChatPage() {
                 callStatus === 'thinking' ? 'ring-4 ring-yellow-500 scale-95' :
                 'ring-2 ring-slate-600'
               }`}>
-                <img src="https://i.imgur.com/8F2Lxyp.png" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
+                <img src="/shrek.svg" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
               </div>
             </div>
           </div>
@@ -255,7 +277,7 @@ export default function ChatPage() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg">
-              <img src="https://i.imgur.com/8F2Lxyp.png" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
+              <img src="/shrek.svg" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
             </div>
             <div>
               <h1 className="font-bold text-white text-sm">Shrek AI</h1>
@@ -283,7 +305,7 @@ export default function ChatPage() {
           {messages.map((msg) => (
             <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
-                <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0"><img src="https://i.imgur.com/8F2Lxyp.png" alt="S" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} /></div>
+                <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0"><img src="https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png" alt="S" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} /></div>
               )}
               <div className="flex flex-col gap-0.5 max-w-[80%]">
                 <div className={`px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
@@ -307,7 +329,7 @@ export default function ChatPage() {
 
           {isLoading && (
             <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs"><img src="https://i.imgur.com/8F2Lxyp.png" alt="S" className="w-full h-full object-cover" /></div>
+              <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs"><img src="https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png" alt="S" className="w-full h-full object-cover" /></div>
               <div className="px-3.5 py-2.5 rounded-2xl bg-slate-800 border border-slate-700/50">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce"></span>
