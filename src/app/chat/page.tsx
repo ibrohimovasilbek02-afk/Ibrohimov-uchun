@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, RotateCcw, Zap } from 'lucide-react'
+import { Send, Mic, MicOff, RotateCcw, Zap, Volume2 } from 'lucide-react'
 
 interface Message {
   id: string
@@ -14,24 +14,97 @@ export default function ChatPage() {
     {
       id: '1',
       role: 'assistant',
-      content: "Yo bro! 😎 Men Sukut AI — sening eng yaxshi IELTS do'sting! Kel gaplashamiz ingliz tilida. Men savol beraman, sen javob ber. Xato qilsang — ustingdan kulib, to'g'risini o'rgataman! 😂\n\nReady? Let's go!\n\n🎤 Tell me about yourself. What do you do in your free time?",
+      content: "Yo bro! 😎 Men Sukut AI — sening eng yaxshi IELTS do'sting! Tugmani bos va gapirishni boshlash! Yoki yozib ham yuborishingiz mumkin.\n\n🎤 Tell me about yourself. What do you do in your free time?",
     },
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<any>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return
+  // Speech-to-Text (brauzer bepul API)
+  const startRecording = () => {
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+    if (!SpeechRecognition) {
+      alert('Brauzeringiz ovozli gaplashishni qo\'llab-quvvatlamaydi. Chrome ishlating!')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.continuous = false
+
+    recognition.onstart = () => {
+      setIsRecording(true)
+    }
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInput(transcript)
+      setIsRecording(false)
+      // Avtomatik yuborish
+      sendMessageWithText(transcript)
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech error:', event.error)
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsRecording(false)
+    }
+  }
+
+  // Text-to-Speech (brauzer bepul API)
+  const speakText = (text: string) => {
+    if (typeof window === 'undefined') return
+
+    // Emoji va maxsus belgilarni olib tashlash
+    const cleanText = text.replace(/[😎😂🎤💪👀🔥❌✅🍅📶💸😅😭🤔👋👏]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/🎤.*$/m, '') // oxirgi savolni o'qimaydi
+
+    const utterance = new SpeechSynthesisUtterance(cleanText)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
+
+    utterance.onstart = () => setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const sendMessageWithText = async (text: string) => {
+    if (!text.trim() || isLoading) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: text,
     }
 
     setMessages((prev) => [...prev, userMessage])
@@ -47,32 +120,37 @@ export default function ChatPage() {
             role: m.role,
             content: m.content,
           })),
-          mode: 'friend',
         }),
       })
 
       const data = await response.json()
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: data.message,
-        },
-      ])
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.message,
+      }
+
+      setMessages((prev) => [...prev, aiMessage])
+
+      // AI javobini ovozda aytadi
+      speakText(data.message)
     } catch (error) {
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: "Voy internet uzildi shekilli 😅 Qaytadan yozib ko'r!",
+          content: "Internet bilan muammo bor 😅 Qaytadan urinib ko'r!",
         },
       ])
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const sendMessage = () => {
+    sendMessageWithText(input)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -83,6 +161,7 @@ export default function ChatPage() {
   }
 
   const resetChat = () => {
+    window.speechSynthesis.cancel()
     setMessages([
       {
         id: Date.now().toString(),
@@ -132,14 +211,26 @@ export default function ChatPage() {
                   😎
                 </div>
               )}
-              <div
-                className={`max-w-[80%] p-3.5 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap ${
-                  msg.role === 'user'
-                    ? 'bg-indigo-600 text-white rounded-br-md'
-                    : 'bg-slate-800 text-slate-200 rounded-bl-md border border-slate-700/50'
-                }`}
-              >
-                {msg.content}
+              <div className="flex flex-col gap-1 max-w-[80%]">
+                <div
+                  className={`p-3.5 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-indigo-600 text-white rounded-br-md'
+                      : 'bg-slate-800 text-slate-200 rounded-bl-md border border-slate-700/50'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+                {/* Ovozda eshitish tugmasi */}
+                {msg.role === 'assistant' && (
+                  <button
+                    onClick={() => speakText(msg.content)}
+                    className="self-start flex items-center gap-1 text-[11px] text-slate-500 hover:text-indigo-400 transition-colors px-2 py-1 rounded"
+                  >
+                    <Volume2 className="w-3 h-3" />
+                    Eshitish
+                  </button>
+                )}
               </div>
               {msg.role === 'user' && (
                 <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0 text-sm">
@@ -168,29 +259,59 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Input */}
+      {/* Input Area */}
       <div className="flex-shrink-0 border-t border-slate-700/50 p-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2">
+          {/* Mikrofon tugmasi - katta */}
+          <div className="flex items-center gap-3">
+            {/* Mikrofon */}
+            <button
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isLoading}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                isRecording
+                  ? 'bg-red-500 animate-pulse shadow-red-500/50'
+                  : 'bg-slate-700 hover:bg-slate-600'
+              } disabled:opacity-40`}
+              title={isRecording ? "To'xtatish" : "Gapirishni boshlash"}
+            >
+              {isRecording ? (
+                <MicOff className="w-5 h-5 text-white" />
+              ) : (
+                <Mic className="w-5 h-5 text-white" />
+              )}
+            </button>
+
+            {/* Yozma input */}
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Javob yozing..."
+              placeholder={isRecording ? "Gapirayapsiz..." : "Yozing yoki mikrofon bosing..."}
               className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition-colors text-sm"
-              disabled={isLoading}
+              disabled={isLoading || isRecording}
             />
+
+            {/* Yuborish */}
             <button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading}
-              className="w-11 h-11 rounded-xl gradient-bg flex items-center justify-center disabled:opacity-40"
+              className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center disabled:opacity-40"
             >
-              <Send className="w-4 h-4 text-white" />
+              <Send className="w-5 h-5 text-white" />
             </button>
           </div>
+
+          {/* Status */}
           <p className="text-center text-[11px] text-slate-600 mt-2">
-            Sukut AI — do'sting kabi gaplashadi, hazil qiladi, IELTS o'rgatadi 🚀
+            {isRecording ? (
+              <span className="text-red-400">🔴 Gapirayapsiz... tugasa to'xtaydi</span>
+            ) : isSpeaking ? (
+              <span className="text-indigo-400">🔊 Sukut gapiratyapti...</span>
+            ) : (
+              "🎤 Mikrofon bosing — gapirishni boshlang | Yoki yozib yuboring"
+            )}
           </p>
         </div>
       </div>
