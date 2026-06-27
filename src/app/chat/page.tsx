@@ -211,13 +211,13 @@ export default function ChatPage() {
                 </div>
               </div>
               {/* Face */}
-              <div className={`w-36 h-36 rounded-full flex items-center justify-center text-6xl shadow-2xl transition-all duration-300 ${
-                callStatus === 'speaking' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 scale-105' :
-                callStatus === 'listening' ? 'bg-gradient-to-br from-green-500 to-emerald-600 scale-100' :
-                callStatus === 'thinking' ? 'bg-gradient-to-br from-yellow-500 to-orange-600 scale-95' :
-                'bg-gradient-to-br from-slate-600 to-slate-700'
+              <div className={`w-36 h-36 rounded-full flex items-center justify-center overflow-hidden shadow-2xl transition-all duration-300 ${
+                callStatus === 'speaking' ? 'ring-4 ring-indigo-500 scale-105' :
+                callStatus === 'listening' ? 'ring-4 ring-green-500 scale-100' :
+                callStatus === 'thinking' ? 'ring-4 ring-yellow-500 scale-95' :
+                'ring-2 ring-slate-600'
               }`}>
-                {callStatus === 'speaking' ? '🗣️' : callStatus === 'listening' ? '👂' : callStatus === 'thinking' ? '🤔' : '😎'}
+                <img src="https://i.imgur.com/8F2Lxyp.png" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
               </div>
             </div>
           </div>
@@ -254,8 +254,8 @@ export default function ChatPage() {
       <header className="flex-shrink-0 border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg text-lg">
-              😎
+            <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg">
+              <img src="https://i.imgur.com/8F2Lxyp.png" alt="Shrek" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} />
             </div>
             <div>
               <h1 className="font-bold text-white text-sm">Shrek AI</h1>
@@ -283,7 +283,7 @@ export default function ChatPage() {
           {messages.map((msg) => (
             <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 text-xs">😎</div>
+                <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0"><img src="https://i.imgur.com/8F2Lxyp.png" alt="S" className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display='none'; e.target.parentElement.innerText='😎' }} /></div>
               )}
               <div className="flex flex-col gap-0.5 max-w-[80%]">
                 <div className={`px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
@@ -307,7 +307,7 @@ export default function ChatPage() {
 
           {isLoading && (
             <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-xs">😎</div>
+              <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs"><img src="https://i.imgur.com/8F2Lxyp.png" alt="S" className="w-full h-full object-cover" /></div>
               <div className="px-3.5 py-2.5 rounded-2xl bg-slate-800 border border-slate-700/50">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce"></span>
